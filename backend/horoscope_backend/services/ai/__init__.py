@@ -1,16 +1,16 @@
 """AI provider module for horoscope platform."""
 
-from .base import AIProvider, AIProviderType, AIResponse
-from .factory import AIProviderFactory
+from .ai_provider_base import AIProvider, ChatInput, ChatOutput, EmbedInput, EmbedOutput
+from .factory import AIProviderFactory, ProviderType
 from .openai_client import OpenAIProvider
-from .service import AIService, ai_service
 
 __all__ = [
     "AIProvider",
-    "AIResponse",
-    "AIProviderType",
+    "ProviderType",
+    "ChatInput",
+    "ChatOutput",
+    "EmbedInput",
+    "EmbedOutput",
     "OpenAIProvider",
     "AIProviderFactory",
-    "AIService",
-    "ai_service",
 ]

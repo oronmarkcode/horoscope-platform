@@ -23,10 +23,6 @@ class AIProviderFactory:
         if provider_type == ProviderType.OPENAI:
             creds = credentials or OpenAICredentials.from_settings()
             conf = config or OpenAIProviderConfig()
-            return AIProviderFactory.create_provider(
-                provider_type=ProviderType.OPENAI,
-                credentials=credentials,
-                config=config,
-            )
+            return OpenAIProvider(credentials=creds, config=conf)
 
         raise ValueError(f"Unsupported provider type: {provider_type}")
