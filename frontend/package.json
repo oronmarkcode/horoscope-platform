@@ -1,0 +1,20 @@
+{
+    "name": "horoscope-platform-frontend",
+    "version": "0.1.0",
+    "description": "Horoscope Frontend Application",
+    "main": "index.js",
+    "scripts": {
+        "dev": "echo 'Frontend development server - to be implemented' && exit 0",
+        "build": "echo 'Frontend build - to be implemented' && exit 0",
+        "start": "echo 'Frontend start - to be implemented' && exit 0",
+        "test": "echo 'Frontend tests - to be implemented' && exit 0"
+    },
+    "keywords": [
+        "horoscope",
+        "frontend"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "dependencies": {},
+    "devDependencies": {}
+}

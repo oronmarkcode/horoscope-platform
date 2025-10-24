@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: horoscope-platform-postgres
+    environment:
+      POSTGRES_DB: horoscope_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: horoscope-platform-backend
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/horoscope_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+    command: uvicorn horoscope_backend.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    image: node:18-alpine
+    container_name: horoscope-platform-frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
