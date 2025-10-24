@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from .endpoints import ai_test, health, horoscopes
+from .endpoints import ai_test, auth, health, horoscopes
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router = APIRouter()
 api_router.include_router(health.router, prefix="/health", tags=["health"])
 api_router.include_router(horoscopes.router, prefix="/horoscopes", tags=["horoscopes"])
 api_router.include_router(ai_test.router, prefix="/ai", tags=["ai"])
+api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])

@@ -23,7 +23,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-# Import all models to ensure they are registered with Base
-from ..models import base, horoscope  # noqa
