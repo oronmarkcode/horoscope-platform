@@ -1,0 +1,40 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    - id: check-added-large-files # prevents giant files from being committed.
+    - id: check-case-conflict # checks for files that would conflict in case-insensitive filesystems.
+    - id: check-merge-conflict # checks for files that contain merge conflict strings.
+    -   id: check-yaml
+        files: >
+            (?x)(
+              ^.*\.yml|
+              ^.*\.yaml
+            )$
+        exclude: chart/.*
+    - id: detect-private-key # detects the presence of private keys.
+    - id: detect-aws-credentials # detects the presence of AWS credentials.
+      args: [--allow-missing-credentials]
+    -   id: end-of-file-fixer
+        files: >
+            (?x)(
+              ^.*\.py
+            )$
+    -   id: trailing-whitespace
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.1.8
+    hooks:
+      # Run the linter.
+      - id: ruff
+        args: [ --fix, --select, I]
+      # Run the formatter.
+      - id: ruff-format
+#-   repo: local
+#    hooks:
+#      - id: pytest
+#        name: pytest
+#        entry: pytest --cov=backend tests
+#        language: system
+#        types: [python]
+#        pass_filenames: false
