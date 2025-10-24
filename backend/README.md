@@ -80,10 +80,10 @@ The frontend is currently a placeholder. To implement it:
    ```bash
    # For React
    npx create-react-app . --template typescript
-   
+
    # For Vue
    npm create vue@latest .
-   
+
    # For Angular
    ng new horoscope-frontend
    ```

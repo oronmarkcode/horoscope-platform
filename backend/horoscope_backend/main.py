@@ -1,11 +1,10 @@
-
 """Main FastAPI application."""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .core.config import settings
 from .api.v1.api import api_router
+from .core.config import settings
 
 # Create FastAPI application
 app = FastAPI(

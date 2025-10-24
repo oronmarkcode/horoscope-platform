@@ -2,7 +2,6 @@
 
 import pytest
 from fastapi.testclient import TestClient
-
 from horoscope_backend.main import app
 
 client = TestClient(app)
