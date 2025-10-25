@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     ai_provider: str | None = "openai"
     openai_api_key: str
     openai_model: str | None = "gpt-3.5-turbo"
+    openai_embedding_model: str | None = "dummy"
+    openai_max_tokens: int | None = 1000
+    openai_temperature: float | None = 0.7
 
     openai_base_url: str
 

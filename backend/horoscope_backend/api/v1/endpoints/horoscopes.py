@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from datetime import date
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
 from pydantic import BaseModel
@@ -15,6 +15,7 @@ from ....crud.horoscope_crud import (
     get_user_config_by_user_id,
     list_horoscope_entries,
 )
+from ....crud.usage_crud import track_user_attempt
 from ....services.ai.openai_client import OpenAIProvider, OpenAIProviderConfig
 from ....services.auth.auth_deps import AuthResult, require_auth_separate_schemes
 from ....services.horoscope_ai_service.horoscope_ai_service import HoroscopeAIService
@@ -40,6 +41,7 @@ class HoroscopeEntryOut(BaseModel):
     zodiac_sign: str
     for_date: date
     variation: int | None = 0
+    payload_json: Dict[str, Any]
 
 
 @router.post("/horoscopes", response_model=HoroscopeEntryOut)
@@ -89,6 +91,9 @@ async def create_horoscope(
         variation=payload.variation or 0,
         payload_json=asdict(result),
     )
+
+    track_user_attempt(db, user_id=user_id, for_date=for_d)
+
     return HoroscopeEntryOut(
         id=str(entry.id),
         user_id=entry.user_id,
@@ -98,6 +103,7 @@ async def create_horoscope(
         zodiac_sign=entry.zodiac_sign,
         for_date=entry.for_date,
         variation=entry.variation,
+        payload_json=entry.payload_json,
     )
 
 
@@ -133,6 +139,7 @@ async def list_horoscopes(
             zodiac_sign=r.zodiac_sign,
             for_date=r.for_date,
             variation=r.variation,
+            payload_json=r.payload_json,
         )
         for r in rows
     ]
@@ -163,4 +170,5 @@ async def get_horoscope(
         zodiac_sign=row.zodiac_sign,
         for_date=row.for_date,
         variation=row.variation,
+        payload_json=row.payload_json,
     )

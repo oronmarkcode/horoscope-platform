@@ -1,6 +1,6 @@
 """User authentication endpoints."""
 
-from datetime import timedelta
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
@@ -14,6 +14,7 @@ from ....crud.auth_crud import (
     get_user_by_email,
     get_user_by_username,
 )
+from ....crud.horoscope_crud import create_user_config
 from ....models.user import User
 from ....services.auth.auth_deps import CurrentUser, get_current_user
 from ....services.auth.auth_service import create_access_token
@@ -25,6 +26,10 @@ class UserCreate(BaseModel):
     username: str
     email: EmailStr
     password: str
+    name: str | None = None
+    dob: date
+    timezone: str | None = None
+    daily_email_enabled: bool | None = None
 
 
 class UserLogin(BaseModel):
@@ -61,6 +66,16 @@ async def signup(user_data: UserCreate, db: Session = Depends(get_db)):
         )
 
     user = create_user(db, user_data.username, user_data.email, user_data.password)
+    create_user_config(
+        db,
+        user_id=user.id,
+        name=user_data.name or user.username,
+        dob=user_data.dob,
+        timezone=user_data.timezone or "Europe/Amsterdam",
+        daily_email_enabled=bool(user_data.daily_email_enabled)
+        if user_data.daily_email_enabled is not None
+        else False,
+    )
 
     return UserResponse(
         id=user.id, username=user.username, email=user.email, is_active=user.is_active

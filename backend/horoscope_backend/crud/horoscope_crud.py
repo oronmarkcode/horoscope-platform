@@ -11,6 +11,28 @@ def get_user_config_by_user_id(db: Session, user_id: int) -> Optional[UserConfig
     return db.query(UserConfig).filter(UserConfig.user_id == user_id).first()
 
 
+def create_user_config(
+    db: Session,
+    *,
+    user_id: int,
+    name: str,
+    dob: date,
+    timezone: str = "Europe/Amsterdam",
+    daily_email_enabled: bool = False,
+) -> UserConfig:
+    cfg = UserConfig(
+        user_id=user_id,
+        name=name,
+        dob=dob,
+        timezone=timezone,
+        daily_email_enabled=daily_email_enabled,
+    )
+    db.add(cfg)
+    db.commit()
+    db.refresh(cfg)
+    return cfg
+
+
 def create_horoscope_entry(
     db: Session,
     *,
