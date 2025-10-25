@@ -1,49 +1,22 @@
-"""Main FastAPI application."""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
 
 from .api.v1.api import api_router
 from .core.config import settings
+from .models import base, horoscope, user
 
-# Import models to ensure they are registered with Base
-from .models import base, horoscope, user  # noqa
-
-# Create FastAPI application
-app = FastAPI(
-    title=settings.app_name,
-    version=settings.app_version,
-    openapi_tags=[
-        {
-            "name": "health",
-            "description": "Health check endpoints",
-        },
-        {
-            "name": "horoscopes",
-            "description": "Horoscope management endpoints",
-        },
-        {
-            "name": "ai",
-            "description": "AI provider testing endpoints",
-        },
-        {
-            "name": "authentication",
-            "description": "User authentication endpoints",
-        },
-    ],
-)
+app = FastAPI(title=settings.app_name, version=settings.app_version)
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this properly for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include API router
 app.include_router(api_router, prefix=settings.api_v1_prefix)
 
 
