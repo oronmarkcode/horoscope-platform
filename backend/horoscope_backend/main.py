@@ -8,7 +8,6 @@ from .models import base, horoscope, user
 
 app = FastAPI(title=settings.app_name, version=settings.app_version)
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,7 +32,6 @@ def custom_openapi():
         routes=app.routes,
     )
 
-    # Add separate security schemes
     openapi_schema["components"]["securitySchemes"] = {
         "BearerAuth": {
             "type": "http",
@@ -49,9 +47,10 @@ def custom_openapi():
         },
     }
 
-    # Remove global security requirement - let endpoints define their own
-    if "security" in openapi_schema:
-        del openapi_schema["security"]
+    openapi_schema["security"] = [
+        {"BearerAuth": []},
+        {"ApiKeyAuth": []},
+    ]
 
     app.openapi_schema = openapi_schema
     return app.openapi_schema
@@ -64,9 +63,3 @@ app.openapi = custom_openapi
 async def root():
     """Root endpoint."""
     return {"message": "Horoscope Backend API", "version": settings.app_version}
-
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy"}

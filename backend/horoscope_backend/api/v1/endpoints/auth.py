@@ -15,7 +15,8 @@ from ....crud.auth_crud import (
     get_user_by_username,
 )
 from ....models.user import User
-from ....services.auth import CurrentUser, create_access_token, get_current_user
+from ....services.auth.auth_deps import CurrentUser, get_current_user
+from ....services.auth.auth_service import create_access_token
 
 router = APIRouter()
 

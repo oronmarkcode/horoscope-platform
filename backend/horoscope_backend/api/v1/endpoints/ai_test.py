@@ -7,11 +7,10 @@ from pydantic import BaseModel
 from ....models.user import User
 from ....services.ai.ai_provider_base import ChatInput, ChatMessage, Role
 from ....services.ai.factory import AIProviderFactory, ProviderType
-from ....services.auth import (
+from ....services.auth.auth_deps import (
     AuthResult,
     CurrentUser,
     get_current_user,
-    optional_auth,
     require_auth_separate_schemes,
 )
 

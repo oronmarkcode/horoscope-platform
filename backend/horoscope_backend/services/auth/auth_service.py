@@ -6,13 +6,6 @@ from typing import Optional
 from jose import JWTError, jwt
 
 from ...core.config import settings
-from ...crud.auth_crud import (
-    authenticate_user,
-    create_user,
-    get_password_hash,
-    get_user_by_id,
-    verify_password,
-)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

@@ -4,16 +4,13 @@ from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
+from ...core.config import settings
 from ...core.database import get_db
 from ...crud.auth_crud import get_user_by_id
 from ...models.user import User
 from .auth_service import verify_token
 
-# Security schemes for Swagger UI
 security = HTTPBearer(auto_error=False)
-security_scheme = HTTPBearer(
-    scheme_name="Bearer Token", description="Enter your JWT token"
-)
 
 
 class CurrentUser:
@@ -55,16 +52,30 @@ async def require_auth(current_user: CurrentUser = Depends(get_current_user)) ->
     return current_user.user
 
 
-def optional_auth(
-    current_user: CurrentUser = Depends(get_current_user),
+async def get_user_if_bearer(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    db: Session = Depends(get_db),
 ) -> Optional[User]:
-    return current_user.user if current_user.is_authenticated else None
+    if not credentials:
+        return None
+
+    payload = verify_token(credentials.credentials)
+    if not payload:
+        return None
+
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+
+    user = get_user_by_id(db, int(user_id))
+    if not user or not user.is_active:
+        return None
+
+    return user
 
 
 def verify_api_key(api_key: str) -> bool:
-    """Verify API key. Override this with your API key validation logic."""
-    valid_api_keys = ["your-api-key-here", "another-api-key"]
-    return api_key in valid_api_keys
+    return api_key == settings.api_key
 
 
 class AuthResult:
@@ -76,59 +87,14 @@ class AuthResult:
         self.auth_type = "user" if user else "api_key" if api_key else "none"
 
 
-async def auth_with_api_key_fallback(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    db: Session = Depends(get_db),
-) -> AuthResult:
-    if not credentials:
-        return AuthResult()
-
-    token = credentials.credentials
-
-    payload = verify_token(token)
-    if payload:
-        user_id = payload.get("sub")
-        if user_id:
-            user = get_user_by_id(db, int(user_id))
-            if user and user.is_active:
-                return AuthResult(user=user)
-
-    if verify_api_key(token):
-        return AuthResult(api_key=token)
-
-    return AuthResult()
-
-
-async def require_auth_or_api_key(
-    auth_result: AuthResult = Depends(auth_with_api_key_fallback),
-) -> AuthResult:
-    if not auth_result.is_authenticated:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required (JWT token or API key)",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    return auth_result
-
-
-def optional_auth_or_api_key(
-    auth_result: AuthResult = Depends(auth_with_api_key_fallback),
-) -> AuthResult:
-    return auth_result
-
-
 async def auth_with_separate_schemes(
     authorization: Optional[str] = Header(None),
     x_api_key: Optional[str] = Header(None),
     db: Session = Depends(get_db),
 ) -> AuthResult:
-    """Authentication that accepts either Bearer token or X-API-Key header."""
-
-    # Try Bearer token first
     if authorization and authorization.startswith("Bearer "):
-        token = authorization[7:]  # Remove "Bearer " prefix
+        token = authorization[7:]
 
-        # Try JWT token
         payload = verify_token(token)
         if payload:
             user_id = payload.get("sub")
@@ -137,23 +103,18 @@ async def auth_with_separate_schemes(
                 if user and user.is_active:
                     return AuthResult(user=user)
 
-        # Try API key
         if verify_api_key(token):
             return AuthResult(api_key=token)
 
-    # Try X-API-Key header
-    if x_api_key:
-        if verify_api_key(x_api_key):
-            return AuthResult(api_key=x_api_key)
+    if x_api_key and verify_api_key(x_api_key):
+        return AuthResult(api_key=x_api_key)
 
-    # Both failed
     return AuthResult()
 
 
 async def require_auth_separate_schemes(
     auth_result: AuthResult = Depends(auth_with_separate_schemes),
 ) -> AuthResult:
-    """Require either Bearer token or X-API-Key authentication."""
     if not auth_result.is_authenticated:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

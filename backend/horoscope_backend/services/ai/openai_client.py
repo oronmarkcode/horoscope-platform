@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Optional
 
 import openai
 from openai import AsyncOpenAI
@@ -10,13 +10,11 @@ from ...core.config import settings
 from .ai_provider_base import (
     AIProvider,
     ChatInput,
-    ChatMessage,
     ChatOutput,
     Credentials,
     EmbedInput,
     EmbedOutput,
     ProviderConfig,
-    Role,
 )
 
 
