@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 from zodiac_sign import get_zodiac_sign
 from zoneinfo import ZoneInfo
 
-from backend.horoscope_backend.services.ai.ai_provider_base import (
+from ..ai.ai_provider_base import (
     AIProvider,
     ChatInput,
     Role,
@@ -70,14 +70,6 @@ class HoroscopeResult:
 
 
 class HoroscopeAIService:
-    """
-    Async, provider-agnostic service that:
-      - builds strict prompts
-      - awaits the provider
-      - parses + validates JSON
-      - returns a structured HoroscopeResult
-    """
-
     def __init__(self, provider: AIProvider, default_tz: str = "Europe/Amsterdam"):
         self.provider = provider
         self.default_tz = default_tz
@@ -238,7 +230,6 @@ Output: Return the JSON object ONLY, with keys in the specified order.
     def _to_result(
         self, p: Dict[str, Any], raw_text: Optional[str], meta: Dict[str, Any]
     ) -> HoroscopeResult:
-        """Convert parsed dict into a HoroscopeResult dataclass with basic sanitation."""
         return HoroscopeResult(
             headline=str(p.get("headline", "A balanced day awaits."))[:140],
             reading=str(

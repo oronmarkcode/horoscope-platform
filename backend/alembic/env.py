@@ -4,6 +4,7 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
+from horoscope_backend import models  # noqa: F401
 from horoscope_backend.core.config import settings
 
 # Import your models here
