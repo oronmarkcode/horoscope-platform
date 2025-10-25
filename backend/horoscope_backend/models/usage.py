@@ -24,7 +24,7 @@ class UsageKindEnum(str, PyEnum):
     ANON_ATTEMPTS = "anon_attempts"
 
 
-class UsageTracking(Base):
+class Usage(Base):
     __tablename__ = "usage_tracking"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
