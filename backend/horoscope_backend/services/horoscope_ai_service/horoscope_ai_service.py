@@ -1,4 +1,5 @@
 import json
+import random
 import re
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -91,19 +92,36 @@ class HoroscopeAIService:
         tz = tz or self.default_tz
         today = on_date or today_in_tz(tz)
         sign = get_zodiac_sign(dob.month, dob.day)
+        mood = random.choice(
+            [
+                "Write with a calm, balanced tone that feels grounded and peaceful.",
+                "Write with a confident, encouraging tone that inspires self-belief.",
+                "Write with a curious tone that invites discovery and gentle reflection.",
+                "Write with a playful, lighthearted tone full of optimism.",
+                "Write with a focused, determined tone that promotes clarity and drive.",
+                "Write with an empathetic, anxious undertone that acknowledges uncertainty but stays hopeful.",
+                "Write with a restless, energetic tone that encourages movement and change.",
+                "Write with a compassionate, overwhelmed tone that guides toward regaining balance.",
+                "Write with a soft, tired tone that suggests rest, recovery, and patience.",
+                "Write with a distracted, wandering tone that still finds small moments of meaning.",
+                "Write with a pensive, introspective tone that encourages inner thought.",
+                "Write with an emotional, heartfelt tone that feels sincere and raw.",
+                "Write with an uncertain but honest tone that reassures and comforts.",
+            ]
+        )
 
-        system_prompt = """
+        system_prompt = f"""
 You are a friendly astrologer.
 
 TASK
 Return EXACTLY ONE JSON object that matches the schema below. Do not include markdown, code fences, prose, or explanations. Output must be valid JSON.
 
 STYLE
-• Uplifting, practical, non-deterministic.
+• {mood}
 • No medical, legal, or financial advice.
 
 SCHEMA (order keys exactly as listed)
-{
+{{
   "headline": string (≤140 chars),
   "reading": string (120–180 words, plain text),
   "lucky_color": string (single word or simple color name),
@@ -114,7 +132,7 @@ SCHEMA (order keys exactly as listed)
   "dont": array of exactly 2 short strings (imperative, positive phrasing without “not” if possible),
   "best_time_window": string "HH:MM–HH:MM" 24h format,
   "compatibility_sign": optional string (one of the 12 zodiac signs) — OMIT this key if unknown
-}
+}}
 
 RULES
 • Do not add extra keys.
