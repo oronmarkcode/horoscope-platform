@@ -20,10 +20,13 @@ export default function Home() {
         async function autoload() {
             if (!token) return
             try {
+                setLoading(true)
                 const res = await api.post('/api/v1/horoscopes', {})
                 setResult(res.data)
             } catch {
                 // ignore
+            } finally {
+                setLoading(false)
             }
         }
         autoload()
@@ -67,7 +70,7 @@ export default function Home() {
                                 <input className="w-full px-3 py-2 rounded bg-white/20" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
                                 <input className="w-full px-3 py-2 rounded bg-white/20" type="date" value={dob} onChange={(e) => setDob(e.target.value)} required />
                                 <input className="w-full px-3 py-2 rounded bg-white/20" placeholder="Timezone" value={timezone} onChange={(e) => setTimezone(e.target.value)} />
-                                <button disabled={loading} className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50">{loading ? 'Generating...' : 'Generate'}</button>
+                                <button disabled={loading} className="px-4 py-2 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50">{loading ? 'Generating...' : (result ? 'Regenerate' : 'Generate')}</button>
                             </form>
                             {error && <p className="text-red-300 mt-4">{error}</p>}
                             {result && (
@@ -98,7 +101,8 @@ export default function Home() {
                                     <a href="/dashboard" className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20">History</a>
                                 </div>
                             </div>
-                            {result && <HoroscopeCard data={result} />}
+                            {loading && <div className="text-sm opacity-80">Generating…</div>}
+                            {result && !loading && <HoroscopeCard data={result} />}
                         </>
                     )}
                 </div>

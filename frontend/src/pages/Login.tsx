@@ -9,16 +9,20 @@ export default function Login() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState<string | null>(null)
+    const [loading, setLoading] = useState(false)
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError(null)
+        setLoading(true)
         try {
             const res = await api.post('/api/v1/auth/login', { username, password })
             setToken(res.data.access_token)
-            navigate('/dashboard', { replace: true })
+            navigate('/', { replace: true })
         } catch (err: any) {
             setError(err?.response?.data?.detail || 'Login failed')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -29,7 +33,7 @@ export default function Login() {
                 <input className="w-full mb-3 px-3 py-2 rounded bg-white/20" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
                 <input className="w-full mb-3 px-3 py-2 rounded bg-white/20" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 {error && <p className="text-red-300 text-sm mb-2">{error}</p>}
-                <button className="w-full px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500">Sign in</button>
+                <button disabled={loading} className="w-full px-3 py-2 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50">{loading ? 'Signing in…' : 'Sign in'}</button>
             </form>
         </div>
     )
