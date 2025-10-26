@@ -4,6 +4,7 @@ import Modal from '../components/Modal'
 import { useToast } from '../components/Toast'
 import { api } from '../lib/api'
 import { useAuth } from '../store/auth'
+import { useUsage } from '../store/usage'
 
 export default function Home() {
     const [name, setName] = useState('')
@@ -15,6 +16,7 @@ export default function Home() {
     const [limitOpen, setLimitOpen] = useState(false)
     const toast = useToast()
     const { token } = useAuth()
+    const { bump } = useUsage()
 
     useEffect(() => {
         async function autoload() {
@@ -30,6 +32,7 @@ export default function Home() {
                 } else {
                     const createRes = await api.post('/api/v1/horoscopes', {})
                     setResult(createRes.data)
+                    bump()
                 }
             } catch {
                 // ignore
@@ -98,6 +101,7 @@ export default function Home() {
                                                 setLoading(true)
                                                 const res = await api.post('/api/v1/horoscopes', {})
                                                 setResult(res.data)
+                                                bump()
                                             } finally {
                                                 setLoading(false)
                                             }
@@ -106,11 +110,25 @@ export default function Home() {
                                     >
                                         {loading ? 'Generating...' : 'Regenerate'}
                                     </button>
-                                    <a href="/dashboard" className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20">History</a>
+                                    <a href="/history" className="px-3 py-1.5 rounded bg-white/10 hover:bg-white/20">History</a>
                                 </div>
                             </div>
                             {loading && <div className="text-sm opacity-80">Generating…</div>}
-                            {result && !loading && <HoroscopeCard data={result} />}
+                            {result?.status === 'insufficient_credits' && !loading && (
+                                <Modal
+                                    open={true}
+                                    onClose={() => setResult(null)}
+                                    title="Out of credits"
+                                >
+                                    <div className="space-y-3">
+                                        <p>You’ve run out of credits for today.</p>
+                                        <div className="flex justify-end">
+                                            <button onClick={() => alert('Coming soon')} className="px-3 py-1.5 rounded bg-indigo-600 text-white">Top up</button>
+                                        </div>
+                                    </div>
+                                </Modal>
+                            )}
+                            {result && result.status !== 'insufficient_credits' && !loading && <HoroscopeCard data={result} />}
                         </>
                     )}
                 </div>

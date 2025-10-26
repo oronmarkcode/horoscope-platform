@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { useAuth } from '../store/auth'
+import { useUsage } from '../store/usage'
 
 export default function CreditsBadge() {
     const [text, setText] = useState<string>('')
     const { token } = useAuth()
+    const { tick } = useUsage()
 
     useEffect(() => {
         let mounted = true
@@ -13,7 +15,10 @@ export default function CreditsBadge() {
                 const res = await api.get('/api/v1/usage')
                 if (!mounted) return
                 if (res.data.kind === 'regen_credits') {
-                    setText(`${res.data.credits_remaining ?? 0} credits`)
+                    const cr = Number(res.data.credits_remaining ?? 0)
+                    const at = Number(res.data.attempts ?? 0)
+                    const remaining = Math.max(0, cr - at)
+                    setText(`${remaining} credits`)
                 } else {
                     setText(`${res.data.attempts ?? 0} attempts today`)
                 }
@@ -29,7 +34,7 @@ export default function CreditsBadge() {
             mounted = false
             if (id) clearInterval(id)
         }
-    }, [token])
+    }, [token, tick])
 
     if (!token || !text) return null
     return (

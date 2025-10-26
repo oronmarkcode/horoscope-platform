@@ -31,7 +31,7 @@ export default function History() {
             <div className="grid gap-4">
                 {rows.map((r) => (
                     <div key={r.id} className="bg-white/10 rounded p-3">
-                        <div className="text-sm opacity-80 mb-2">{r.for_date} · var {r.variation}</div>
+                        <div className="text-sm opacity-80 mb-2">{r.for_date}{r.variation ? ` · var ${r.variation}` : ''}</div>
                         <HoroscopeCard data={r} />
                     </div>
                 ))}

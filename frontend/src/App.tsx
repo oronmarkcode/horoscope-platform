@@ -20,7 +20,7 @@ export default function App() {
                         <CreditsBadge />
                         {token ? (
                             <>
-                                <Link to="/dashboard">Dashboard</Link>
+                                <Link to="/history">History</Link>
                                 <Link to="/profile">Profile</Link>
                                 <button onClick={logout} className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500">Logout</button>
                             </>
