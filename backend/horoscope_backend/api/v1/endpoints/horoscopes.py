@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from datetime import date
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import (
     APIRouter,
@@ -24,7 +24,7 @@ from ....crud.horoscope_crud import (
     get_user_config_by_user_id,
     list_horoscope_entries,
 )
-from ....crud.usage_crud import track_user_attempt
+from ....crud.usage_crud import get_usage_for_date, track_user_attempt
 from ....services.ai.openai_client import OpenAIProvider, OpenAIProviderConfig
 from ....services.auth.auth_deps import (
     AuthResult,
@@ -45,7 +45,7 @@ class HoroscopeCreate(BaseModel):
     variation: Optional[int] = 0
 
 
-class HoroscopeEntryOut(BaseModel):
+class HoroscopeDataOut(BaseModel):
     id: str
     user_id: Optional[int] = None
     is_anonymous: bool
@@ -55,6 +55,11 @@ class HoroscopeEntryOut(BaseModel):
     for_date: date
     variation: int | None = 0
     payload_json: Dict[str, Any]
+
+
+class HoroscopeEntryOut(BaseModel):
+    horoscope_data: Optional[HoroscopeDataOut] = None
+    status: Literal["success", "insufficient_credits", "error"] = "success"
 
 
 @router.post("/horoscopes", response_model=HoroscopeEntryOut)
@@ -80,6 +85,12 @@ async def create_horoscope(
 
         for_d = payload.for_date or today_in_tz(tz)
         ip = None
+
+        usage = get_usage_for_date(db, ip=ip, for_date=today_in_tz(tz), user_id=user_id)
+        if usage and usage.attempts >= usage.credits_remaining:
+            return HoroscopeEntryOut(
+                status="insufficient_credits",
+            )
     else:
         is_anonymous = True
         user_id = None
@@ -93,6 +104,13 @@ async def create_horoscope(
         dob = payload.dob
         tz = payload.timezone
         for_d = payload.for_date or today_in_tz(tz)
+
+        usage = get_usage_for_date(db, ip=ip, for_date=today_in_tz(tz), user_id=user_id)
+        if usage and usage.attempts >= usage.credits_remaining:
+            return HoroscopeEntryOut(
+                status="insufficient_credits",
+            )
+
         provider = OpenAIProvider()
 
     provider = OpenAIProvider()
@@ -123,15 +141,18 @@ async def create_horoscope(
     )
 
     return HoroscopeEntryOut(
-        id=str(entry.id),
-        user_id=entry.user_id,
-        is_anonymous=entry.is_anonymous,
-        name=entry.name,
-        dob=entry.dob,
-        zodiac_sign=entry.zodiac_sign,
-        for_date=entry.for_date,
-        variation=entry.variation,
-        payload_json=entry.payload_json,
+        status="success",
+        horoscope_data=HoroscopeDataOut(
+            id=str(entry.id),
+            user_id=entry.user_id,
+            is_anonymous=entry.is_anonymous,
+            name=entry.name,
+            dob=entry.dob,
+            zodiac_sign=entry.zodiac_sign,
+            for_date=entry.for_date,
+            variation=entry.variation,
+            payload_json=entry.payload_json,
+        ),
     )
 
 

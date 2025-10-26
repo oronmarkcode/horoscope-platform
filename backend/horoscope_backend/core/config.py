@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 90
     api_key: str | None = None
 
+    registered_user_init_credits: int = 10
+    anon_user_init_credit: int = 1
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

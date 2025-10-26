@@ -2,6 +2,7 @@ from datetime import date
 
 from sqlalchemy.orm import Session
 
+from ..core.config import settings
 from ..models.usage import Usage, UsageKindEnum
 
 
@@ -33,6 +34,12 @@ def track_user_attempt(
         .filter(Usage.user_id == user_id, Usage.kind == usage_kind)
         .first()
     )
+
+    credits_remaining = (
+        settings.registered_user_init_credits
+        if user_id
+        else settings.anon_user_init_credit
+    )
     if not row:
         row = Usage(
             kind=usage_kind,
@@ -40,6 +47,7 @@ def track_user_attempt(
             attempts=1,
             for_date=for_date,
             ip=ip,
+            credits_remaining=credits_remaining,
         )
         db.add(row)
         db.commit()
@@ -52,25 +60,25 @@ def track_user_attempt(
     return row
 
 
-def get_attempts_for_date(db: Session, *, ip: str, for_date: date) -> int:
-    row = (
-        db.query(Usage)
-        .filter(
-            Usage.ip == ip,
-            Usage.kind == UsageKindEnum.ANON_ATTEMPTS,
-            Usage.for_date == for_date,
+def get_usage_for_date(
+    db: Session, *, ip: str, for_date: date, user_id
+) -> Usage | None:
+    if user_id:
+        return (
+            db.query(Usage)
+            .filter(
+                Usage.user_id == user_id,
+                Usage.for_date == for_date,
+            )
+            .first()
         )
-        .first()
-    )
-    return int(row.attempts) if row and row.attempts is not None else 0
-
-
-def get_user_credits(db: Session, *, user_id: int) -> int:
-    row = (
-        db.query(Usage)
-        .filter(Usage.user_id == user_id, Usage.kind == UsageKindEnum.REGEN_CREDITS)
-        .first()
-    )
-    return (
-        int(row.credits_remaining) if row and row.credits_remaining is not None else 0
-    )
+    else:
+        return (
+            db.query(Usage)
+            .filter(
+                Usage.ip == ip,
+                Usage.kind == UsageKindEnum.ANON_ATTEMPTS,
+                Usage.for_date == for_date,
+            )
+            .first()
+        )
