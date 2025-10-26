@@ -10,3 +10,5 @@
 10. cache - the responses will be moslty similare
 11. vector db? most likely not needed
 12. add streak decleration for reading dayily horoscopre
+13. add rate limiting
+14. add limitations on nhow many credits per day

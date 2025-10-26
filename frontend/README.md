@@ -1,19 +1,13 @@
-# Horoscope Frontend
+## Horoscope Frontend
 
-This is the frontend application for the Horoscope project.
+Vite + React + Tailwind starter for the Horoscope platform.
 
-## Development
+### Setup
+1. cd frontend
+2. npm install
+3. npm run dev
 
-This frontend is currently a placeholder. You can implement it using your preferred frontend framework (React, Vue, Angular, etc.).
-
-## Structure
-
-- `package.json` - Frontend dependencies and scripts
-- `README.md` - This file
-
-## Next Steps
-
-1. Choose a frontend framework
-2. Initialize the project structure
-3. Implement the UI components
-4. Connect to the backend API
+### Scripts
+- dev: Start dev server
+- build: Type-check and build
+- preview: Preview production build
