@@ -21,6 +21,7 @@ def track_user_attempt(
             user_id=user_id,
             attempts=1,
             for_date=for_date,
+            ip=ip,
         )
         db.add(row)
         db.commit()

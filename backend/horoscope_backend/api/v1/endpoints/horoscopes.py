@@ -2,7 +2,16 @@ from dataclasses import asdict
 from datetime import date
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, status
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    HTTPException,
+    Path,
+    Query,
+    Request,
+    status,
+)
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from zodiac_sign import get_zodiac_sign
@@ -17,7 +26,11 @@ from ....crud.horoscope_crud import (
 )
 from ....crud.usage_crud import track_user_attempt
 from ....services.ai.openai_client import OpenAIProvider, OpenAIProviderConfig
-from ....services.auth.auth_deps import AuthResult, require_auth_separate_schemes
+from ....services.auth.auth_deps import (
+    AuthResult,
+    auth_with_separate_schemes,
+    require_auth_separate_schemes,
+)
 from ....services.horoscope_ai_service.horoscope_ai_service import HoroscopeAIService
 from ....utils.common import today_in_tz
 
@@ -46,29 +59,42 @@ class HoroscopeEntryOut(BaseModel):
 
 @router.post("/horoscopes", response_model=HoroscopeEntryOut)
 async def create_horoscope(
+    request: Request,
     payload: HoroscopeCreate = Body(...),
-    auth: AuthResult = Depends(require_auth_separate_schemes),
+    auth: AuthResult = Depends(auth_with_separate_schemes),
     db: Session = Depends(get_db),
 ):
-    if not auth.is_authenticated:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required"
-        )
+    if auth.auth_type == "user":
+        cfg = get_user_config_by_user_id(db, auth.user_id)
+        if not cfg:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User configuration required",
+            )
+        name = payload.name or cfg.name
+        dob = payload.dob or cfg.dob
+        tz = payload.timezone or cfg.timezone
 
-    cfg = get_user_config_by_user_id(db, auth.user_id)
-    if not cfg:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User configuration required",
-        )
-    name = payload.name or cfg.name
-    dob = payload.dob or cfg.dob
-    tz = payload.timezone or cfg.timezone
+        is_anonymous = False
+        user_id = auth.user_id
 
-    is_anonymous = False
-    user_id = auth.user_id
+        for_d = payload.for_date or today_in_tz(tz)
+        ip = None
+    else:
+        is_anonymous = True
+        user_id = None
+        ip = request.client.host
+        if not all(getattr(payload, field) is not None for field in payload.__fields__):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="All fields are required for anonymous user",
+            )
+        name = payload.name
+        dob = payload.dob
+        tz = payload.timezone
+        for_d = payload.for_date or today_in_tz(tz)
+        provider = OpenAIProvider()
 
-    for_d = payload.for_date or today_in_tz(tz)
     provider = OpenAIProvider()
     service = HoroscopeAIService(provider=provider, default_tz=tz)
     result = await service.generate_horoscope(
@@ -92,7 +118,7 @@ async def create_horoscope(
         payload_json=asdict(result),
     )
 
-    track_user_attempt(db, user_id=user_id, for_date=for_d)
+    track_user_attempt(db, user_id=user_id, for_date=for_d, ip=ip)
 
     return HoroscopeEntryOut(
         id=str(entry.id),
