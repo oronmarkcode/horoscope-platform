@@ -118,7 +118,9 @@ async def create_horoscope(
         payload_json=asdict(result),
     )
 
-    track_user_attempt(db, user_id=user_id, for_date=for_d, ip=ip)
+    track_user_attempt(
+        db, user_id=user_id, for_date=payload.for_date or today_in_tz(tz), ip=ip
+    )
 
     return HoroscopeEntryOut(
         id=str(entry.id),
