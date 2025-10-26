@@ -95,15 +95,16 @@ async def create_horoscope(
         is_anonymous = True
         user_id = None
         ip = request.client.host
-        if not all(getattr(payload, field) is not None for field in payload.__fields__):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="All fields are required for anonymous user",
-            )
         name = payload.name
         dob = payload.dob
         tz = payload.timezone
         for_d = payload.for_date or today_in_tz(tz)
+
+        if not dob or not tz or not name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="All fields are required for anonymous user",
+            )
 
         usage = get_usage_for_date(db, ip=ip, for_date=today_in_tz(tz), user_id=user_id)
         if usage and usage.attempts >= usage.credits_remaining:

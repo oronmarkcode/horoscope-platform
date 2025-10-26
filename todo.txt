@@ -1,14 +1,11 @@
 1. add sanitation to chat response
-2. add stage to interpert the horoscope further
-3. add fortune teller
 4. expand user to input more data in sign up (dob etc)
-5. save results to see progress, generate progress bar if you life are getting better
 6. add push notifications for email?
-7. add credit monitorint, init user with credit and allow to buy more
+7. add credit monotoring, init user with credit and allow to buy more
 8. allow to choose model? preferebly not, i want unifrom ,transparent service
 9. rate limiter
-10. cache - the responses will be moslty similare
+10. cache - the responses will be moslty similar
 11. vector db? most likely not needed
 12. add streak decleration for reading dayily horoscopre
-13. add rate limiting
-14. add limitations on nhow many credits per day
+14. add limitations on how many credits per day
+15. check the regenerate with variation
