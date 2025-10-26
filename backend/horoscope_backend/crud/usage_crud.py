@@ -50,3 +50,27 @@ def track_user_attempt(
     db.commit()
     db.refresh(row)
     return row
+
+
+def get_attempts_for_date(db: Session, *, ip: str, for_date: date) -> int:
+    row = (
+        db.query(Usage)
+        .filter(
+            Usage.ip == ip,
+            Usage.kind == UsageKindEnum.ANON_ATTEMPTS,
+            Usage.for_date == for_date,
+        )
+        .first()
+    )
+    return int(row.attempts) if row and row.attempts is not None else 0
+
+
+def get_user_credits(db: Session, *, user_id: int) -> int:
+    row = (
+        db.query(Usage)
+        .filter(Usage.user_id == user_id, Usage.kind == UsageKindEnum.REGEN_CREDITS)
+        .first()
+    )
+    return (
+        int(row.credits_remaining) if row and row.credits_remaining is not None else 0
+    )
