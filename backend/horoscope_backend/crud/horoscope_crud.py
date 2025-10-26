@@ -80,3 +80,28 @@ def list_horoscope_entries(
 
 def get_horoscope_entry_by_id(db: Session, entry_id) -> Optional[HoroscopeEntry]:
     return db.query(HoroscopeEntry).filter(HoroscopeEntry.id == entry_id).first()
+
+
+def update_user_config(
+    db: Session,
+    *,
+    user_id: int,
+    name: Optional[str] = None,
+    dob: Optional[date] = None,
+    timezone: Optional[str] = None,
+    daily_email_enabled: Optional[bool] = None,
+) -> Optional[UserConfig]:
+    cfg = get_user_config_by_user_id(db, user_id)
+    if not cfg:
+        return None
+    if name is not None:
+        cfg.name = name
+    if dob is not None:
+        cfg.dob = dob
+    if timezone is not None:
+        cfg.timezone = timezone
+    if daily_email_enabled is not None:
+        cfg.daily_email_enabled = daily_email_enabled
+    db.commit()
+    db.refresh(cfg)
+    return cfg
