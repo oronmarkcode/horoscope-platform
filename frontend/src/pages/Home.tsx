@@ -21,8 +21,16 @@ export default function Home() {
             if (!token) return
             try {
                 setLoading(true)
-                const res = await api.post('/api/v1/horoscopes', {})
-                setResult(res.data)
+                const today = new Date().toISOString().slice(0, 10)
+                const listRes = await api.get('/api/v1/horoscopes', {
+                    params: { from: today, to: today, limit: 1 },
+                })
+                if (Array.isArray(listRes.data) && listRes.data.length > 0) {
+                    setResult(listRes.data[0])
+                } else {
+                    const createRes = await api.post('/api/v1/horoscopes', {})
+                    setResult(createRes.data)
+                }
             } catch {
                 // ignore
             } finally {

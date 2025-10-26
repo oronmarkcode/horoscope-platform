@@ -157,7 +157,7 @@ async def create_horoscope(
     )
 
 
-@router.get("/horoscopes", response_model=List[HoroscopeEntryOut])
+@router.get("/horoscopes", response_model=List[HoroscopeDataOut])
 async def list_horoscopes(
     from_date: Optional[date] = Query(None, alias="from"),
     to_date: Optional[date] = Query(None, alias="to"),
@@ -180,7 +180,7 @@ async def list_horoscopes(
         offset=offset,
     )
     return [
-        HoroscopeEntryOut(
+        HoroscopeDataOut(
             id=str(r.id),
             user_id=r.user_id,
             is_anonymous=r.is_anonymous,
@@ -195,7 +195,7 @@ async def list_horoscopes(
     ]
 
 
-@router.get("/horoscopes/{id}", response_model=HoroscopeEntryOut)
+@router.get("/horoscopes/{id}", response_model=HoroscopeDataOut)
 async def get_horoscope(
     id: str = Path(...),
     auth: AuthResult = Depends(require_auth_separate_schemes),
@@ -211,7 +211,7 @@ async def get_horoscope(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access to this entry is forbidden",
         )
-    return HoroscopeEntryOut(
+    return HoroscopeDataOut(
         id=str(row.id),
         user_id=row.user_id,
         is_anonymous=row.is_anonymous,

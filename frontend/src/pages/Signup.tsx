@@ -31,7 +31,7 @@ export default function Signup() {
             // Auto-login then redirect to dashboard
             const loginRes = await api.post('/api/v1/auth/login', { username, password })
             setToken(loginRes.data.access_token)
-            navigate('/dashboard', { replace: true })
+            navigate('/', { replace: true })
         } catch (err: any) {
             setError(err?.response?.data?.detail || 'Signup failed')
         }
